@@ -1,6 +1,8 @@
 package telran.interviews;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 public class InterviewQuestions {
 public static void displayOccurrences(String [] strings) {
@@ -73,21 +75,31 @@ public static Map<Integer, Integer> getMapSquares(List<Integer> numbers) {
 	return res;
 }
 public static boolean isAnagram(String word, String anagram) {
-	//TODO
 	//returns true if "anagram" string contains all
 	// letters from "word" in another order (case sensitive)
 	//O[N] (sorting is disallowed)
-	return false;
+	boolean res = false;
+	if (word.length() == anagram.length() && !word.equals(anagram)) {
+		Map<String, Long> map = Arrays.stream(word.split(""))
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+		res = Arrays.stream(anagram.split(""))
+				.allMatch(s -> map.compute(s, (k, v) -> v == null ? -1 : v - 1) >= 0);
+	}
+	return res;
 }
 public static List<DateRole> assignRoleDates(List<DateRole> rolesHistory,
 		List<LocalDate> dates) {
-	//TODO
 	//create List<DateRole> with roles matching with the given dates
 	//most effective data structure
-	return null;
+	TreeMap<LocalDate, String> historyMap = rolesHistory.stream()
+			.collect(Collectors.toMap(DateRole::date, DateRole::role,
+					(v1, v2) -> v2, TreeMap::new));
+	return dates.stream().map(d -> {
+		var entry = historyMap.floorEntry(d);
+		return new DateRole(d, entry == null ? null : entry.getValue());
+	}).toList();
 }
 public static void displayDigitsStatistics() {
-	//TODO
 	//display out statistics in the following format (example)
 	/* 1 -> <count of occurrences>
 	 * 2 -> .....
@@ -96,6 +108,13 @@ public static void displayDigitsStatistics() {
 	//sorted by counts of occurrences in the descending order
 	//takes 1000000 random numbers in range [0-Integer.MAX_VALUE)
 	//one pipeline with no additional yours methods
+	new Random().ints(1_000_000, 0, Integer.MAX_VALUE)
+	.boxed().flatMap(n -> Arrays.stream(n.toString().split("")))
+	.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+	.entrySet().stream().sorted(Entry.comparingByValue(Comparator.reverseOrder()))
+	.forEach(e -> System.out.printf("%s -> %d\n", e.getKey(), e.getValue()));
+	
+	
 	
 }
 }
